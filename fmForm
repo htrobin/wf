@@ -68,37 +68,11 @@ Is Scripted:	否
 加密:	禁用
 更新操作要有编辑者权限:	否
 Is Scripted:	否
-域:	FormName
-数据类型:	文本
-帮助说明:	[未指定]
-域类型:	可编辑
-当发送邮件时签名/在区段中签名:	否
-加密:	禁用
-更新操作要有编辑者权限:	否
-Is Scripted:	否
-域:	FormAlias
-数据类型:	文本
-帮助说明:	[未指定]
-域类型:	可编辑
-当发送邮件时签名/在区段中签名:	否
-加密:	禁用
-更新操作要有编辑者权限:	否
-Is Scripted:	否
-域:	FieldList
-数据类型:	文本
-输入多值分隔符:	新行
-显示多值分隔符:	新行
-帮助说明:	[未指定]
-域类型:	可编辑
-当发送邮件时签名/在区段中签名:	否
-加密:	禁用
-更新操作要有编辑者权限:	否
-Is Scripted:	否
 JavaScript 和 HTML 代码:
 HTML 首页内容:	"<link rel=\"stylesheet\" type='text/css' href=\"/" + $$CommonDB + "/global.css\">" + "<script src=\"/miniui/scripts/boot.js\" type=\"text/javascript\"></script>" + "<style   media=\"print\">  .Noprint{display:none;}</style>";
 HTML 属性:	"style='background-color:#F8F8F8'"
 表单 fmForm
-JS Header
+[JS Header]
 function goSubmitDoc(){
 	var form = new mini.Form("#fmTab");
 	form.validate();
