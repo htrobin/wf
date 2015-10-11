@@ -56,7 +56,7 @@ $(function() {
 */
 function initOnLoad(arrTmpCurUser) {
     //页面装载前执行全局方法
-	if(typeof(beforeLoad)!="undefined"){
+	if(typeof beforeLoad != "undefined"){
 		beforeLoad();
 	}
     //编辑状态下执行
@@ -243,7 +243,6 @@ function initOnLoad(arrTmpCurUser) {
                                         } else {
                                             $(obj).css("visibility", "hidden");
                                         }
-                                        //if(gJsonField[f])delete gJsonField[f];
                                     } else if (strTagName == "textarea") {
                                         if (f.indexOf("ID_") > -1) {
                                             $('[name=\"' + f + '\"]', gForm).empty()
@@ -258,7 +257,6 @@ function initOnLoad(arrTmpCurUser) {
                                         _arrSeeUser = wfFormula(gJsonField[f].s.split("|"), "")
                                     }
                                     if ($.inArray(gUserCName, _arrSeeUser) < 0) {
-                                        //if(!dojo.some(_arrSeeUser,function(item){return item==gUserCName})){
                                         if (f.indexOf("js-") > -1) {
                                             $(obj).css("display", "none");
                                         } else {
@@ -270,7 +268,6 @@ function initOnLoad(arrTmpCurUser) {
                                         }
                                     }
                                 }
-                                //if(gJsonField[f])delete gJsonField[f];
                                 break;
                             case "w":
                                 /*必填*/
@@ -283,7 +280,7 @@ function initOnLoad(arrTmpCurUser) {
                                         $(obj).attr("required", true);
                                         break;
                                     }
-                                    _setStyle(obj, strTagName, strType);
+                                    //_setStyle(obj, strTagName, strType);
                                 }
                                 break;
                             case "m":
@@ -295,12 +292,10 @@ function initOnLoad(arrTmpCurUser) {
                                     }
 
                                     if ($.inArray(gUserCName, _arrSeeUser) < 0) {
-                                        //if(!dojo.some(_arrSeeUser,function(item){return item==gUserCName})){
                                         if (f.indexOf("js-") > -1) {
                                             $(obj).css("display", "none");
                                         } else {
                                             $(obj).css("visibility", "hidden");
-                                            //dojo.style(obj,"visibility","visible");
                                         }
                                     } else {
                                         if (f.indexOf("js-") > -1) {
@@ -314,7 +309,7 @@ function initOnLoad(arrTmpCurUser) {
                                             $(obj).attr("required", true);
                                             break;
                                         }
-                                        _setStyle(obj, strTagName, strType);
+                                        //_setStyle(obj, strTagName, strType);
                                     }
                                 }
                                 break;
@@ -368,12 +363,14 @@ function initOnLoad(arrTmpCurUser) {
                 }
             }
         }
-    } else {
+    }
+	else 
+	{
         /*王茂林注释
 		_HiddenWFIdea();
 		 */
 		 //装载附件表格
-		loadAttachGrid(true);
+		//loadAttachGrid(true);
         var _TEST = function(ID) {
             $.each($(ID + ">WFFieldStatus", gWFProcessXML),
             function(i, item) {
@@ -449,12 +446,13 @@ function initOnLoad(arrTmpCurUser) {
             })
         }
     }
+	gJsonField=null;
+	
     if (gCloseBtn.length > 0) {
         gArrBtns = gArrBtns.concat(gCloseBtn)
     };
-    //var btndom = "<a class='mini-button'></a>";
-	var btndom = '<button class="btn btn-md" type="button"></button>';//"<a class='button'></a>;
-    $("#btnCont").empty(); //alert(gArrBtns.length)
+	var btndom = '<button class="btn btn-md" type="button"></button>';
+    $("#btnCont").empty();
 	
 	/* 是否汉字 */
 	var isChinese=function(v) {
@@ -532,7 +530,6 @@ function initOnLoad(arrTmpCurUser) {
                         success: function(txt) {
                             if (txt != "") {
                                 var arrField = new Function("return [" + txt + "]")();
-								console.log(arrField);
                                 $.each(arrField,
                                 function(i, item) {
                                     var id = item.split("|")[1],
@@ -632,6 +629,7 @@ function wfSubDocStart() {
             alert(WF_CONST_LANG.SAVE_BEFORE + "< " + _pe + " > "+WF_CONST_LANG.PAGE_NO_INIT);
         }
     }
+	/*
     //检测必填字段
     var _U = function(o, s) {
         return typeof(o[s]) != "undefined"
@@ -706,6 +704,7 @@ function wfSubDocStart() {
     if (_tmpField.length > 0) {
         alert(WF_CONST_LANG.NO_CHECK_FIELD+"\n" + _tmpField.join("\n"))
     }
+	*/
     gArrTacheName = []; //清空
     if (!gIsNewDoc) {
         /*
@@ -902,7 +901,6 @@ function wfSubDocStart() {
                         success: function(e) {
                             var selOrgDom = e;
                             oWinDlg.setBody( baidu.template(selOrgDom,PublicField)  );
-                            //oWinDlg.setFooter("<div id='SubmitDocActionBar' style='text-align:right'></div>");
                             oWinDlg.setFooter("<div id='SubmitDocActionBar' style='text-align:left'></div>");
                             setTimeout(function(){wfAddToolbar("oWinDlg")},10);
                             loadOrgTree();
