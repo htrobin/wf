@@ -21,19 +21,6 @@ $(function() {
     } else {
         var tmpCurUser = gForm.CurUser.value.replace(/\s/g, ""),
         arrTmpCurUser = tmpCurUser.indexOf(",") > -1 ? tmpCurUser.split(",") : tmpCurUser.split(";");
-		/*
-		@V6.1 屏蔽页面打开时，检测是否进行该文档的编辑,此功能有代理统一检测.(2015-09-16)
-        if (!gIsEditDoc) {
-            if (gWFStatus < 2) {
-                var arrUrl = gForm.Path_Info.value.split("?"),
-                pathurl = arrUrl[0] + "?EditDocument" + (arrUrl[1].indexOf("&") > -1 ? arrUrl[1].substr(arrUrl[1].indexOf("&")) : "") + "&_=" + (new Date()).getTime();
-                if ($.inArray(gUserCName, arrTmpCurUser) > -1) {
-					window.location = pathurl;
-                    return;
-                }
-            } else {}
-        }
-		*/
         //读取流程图
         var strView = "vwWFXML";
         if (gWFDebug) {
@@ -139,7 +126,6 @@ function initOnLoad(arrTmpCurUser) {
                             objBtn.clickEvent = txt;
                             break;
                         case 4:
-                            //txt=(txt=="居右"||txt=="居左"?txt=="居右"?"2":"1":txt);
                             txt = (txt == "\u5C45\u53F3" || txt == "\u5C45\u5DE6" ? txt == "\u5C45\u53F3" ? "2": "1": txt);
                             objBtn.align = txt;
                             break;
@@ -373,10 +359,8 @@ function initOnLoad(arrTmpCurUser) {
             //装载后执行函数
             var _pe = gPageEvent["OpenAfter"];
             if (_pe.replace(/\s/, "") != "") {
-                //try{eval(gPageEvent["WFSaveBefore"])}catch(e){alert("页面打开后执行的函数可能未在页面中初始化！");return}
                 try {
 					//@V6.1 * 屏蔽eval功能(2015-09-16)
-                    //eval(_pe)
 					new Function(_pe)();
                 } catch(e) {
 					//@V6.1 * 调整为多语言 (2015-09-18)
@@ -588,6 +572,7 @@ function initOnLoad(arrTmpCurUser) {
 		afterLoad();
 	}
 }
+//获取XML节点属性的值
 function getNodeValue(node, name) {
     var reValue = "";
     $.each($(name, node),
@@ -602,6 +587,11 @@ function fnResumeDisabled() {
 	$("input[disabled],textarea[disabled],select[disabled]").prop("disabled",false);
 }
 function wfSubDocStart() {
+	//用于页面验证
+	var tmpform = new mini.Form(gForm);
+	tmpform.validate();
+	if (tmpform.isValid() == false) return;
+	
 	var isLock=false;
 	var lastPerson="";//最后一次保存人
 	try{
@@ -619,7 +609,9 @@ function wfSubDocStart() {
 				}
 			});
 		}
-	}catch(e){isLock=false}
+	}catch(e){
+		isLock=false
+	}
 	if(isLock){
 		//在您提交前[xxx]已经对文件进行了提交操作，请您刷新页面重新提交.
 		alert(WF_CONST_LANG.LOCK_SUBMIT_PREFIX+lastPerson+WF_CONST_LANG.LOCK_SUBMIT_SUFFIX);
