@@ -152,34 +152,6 @@ function initOnLoad(arrTmpCurUser) {
                             return o
                         }
                     };
-                    var _setStyle = function(obj, tag, type) {
-                        try {
-                            if (tag == "select") {
-                                $(obj).css("background-color", "#fc9")
-                            } else if (type == "radio" || type == "checkbox") {
-                                if (obj.parentNode && obj.parentNode.tagName.toLowerCase() == "label") {
-                                    $(obj.parentNode).css("color", "#f00")
-                                }
-                            } else if (tag == "div") {
-                                var oWFIdea = document.getElementById("WFIdea");
-                                if (oWFIdea) {
-                                    $(oWFIdea).css("border", gCssBorder)
-                                }
-                                if ($.grep($(gForm.WFCurNodeID.value, gWFLogXML),
-                                function(item) {
-                                    var strId = item.getAttribute("idea") ? $.trim(item.getAttribute("idea")) : "";
-                                    if (strId == "") {
-                                        return true
-                                    }
-                                }).length > 0) {
-                                    $(obj).css("height", "60px")
-                                }
-                                $(obj).css("border", gCssBorder)
-                            } else {
-                                $(obj).css("border", gCssBorder)
-                            }
-                        } catch(e) {}
-                    };
                     var _setStatus = function(obj, status, f) {
                         try {
                             var strTagName = obj.tagName.toLowerCase(),
@@ -212,18 +184,7 @@ function initOnLoad(arrTmpCurUser) {
 										}
 										break;
 									case "input":
-										if (strType == "text") {
-											//obj.setAttribute("readOnly",true);
-											$(obj).attr({
-												"disabled": true,
-												"onclick": null,
-												"onfocus": null,
-												"onblur": null,
-												style: "backgroundImage:none;borderWidth:0"
-											});
-										} else {
-											obj.setAttribute("disabled", true);
-										}
+										obj.setAttribute("disabled", true);
 										break;
 									case "select":
 										obj.setAttribute("disabled", true);
@@ -280,7 +241,6 @@ function initOnLoad(arrTmpCurUser) {
                                         $(obj).attr("required", true);
                                         break;
                                     }
-                                    //_setStyle(obj, strTagName, strType);
                                 }
                                 break;
                             case "m":
@@ -309,7 +269,6 @@ function initOnLoad(arrTmpCurUser) {
                                             $(obj).attr("required", true);
                                             break;
                                         }
-                                        //_setStyle(obj, strTagName, strType);
                                     }
                                 }
                                 break;
@@ -416,9 +375,7 @@ function initOnLoad(arrTmpCurUser) {
                             _arrSeeUser = null;
                             $.each($("." + f, gForm),
                             function(i, item) {
-                                //alert(_arrSeeUser);
                                 _setStatus(item, status, f);
-                                //alert(_arrSeeUser);
                             })
                         } else {
                             if (gJsonField[f]) delete gJsonField[f];
@@ -629,83 +586,8 @@ function wfSubDocStart() {
             alert(WF_CONST_LANG.SAVE_BEFORE + "< " + _pe + " > "+WF_CONST_LANG.PAGE_NO_INIT);
         }
     }
-	/*
-    //检测必填字段
-    var _U = function(o, s) {
-        return typeof(o[s]) != "undefined"
-    };
-    var _C = function(f, bw, bm) {
-        if (bw) {
-            if (gJsonField[f].w != "") {
-                alert(gJsonField[f].w)
-            }
-        } else {
-            var tmp = gJsonField[f].m.split("^");
-            if ($.inArray(gUserCName), tmp[0].split("|") > -1) {
-                if (tmp[1] != "") {
-                    alert(tmp[1])
-                }
-            } else {
-                return false
-            }
-        }
-        return true
-    };
-    var bw = false,
-    bm = false,
-    _tmpField = [];
-
-    for (f in gJsonField) {
-        if (f.indexOf("js-") < 0) {
-            be = _U(gJsonField[f], "e"),
-            bw = _U(gJsonField[f], "w"),
-            bm = _U(gJsonField[f], "m"),
-            bObjHTML = true;
-            var objMini = (mini.getbyName(f) != "" ? mini.getbyName(f) : false);
-            if (be || bw || bm) {
-                if (bObjHTML) {
-                    var objHTML = $('[name=\"' + f + '\"]', gForm);
-                    if (objHTML.length > 0) {
-                        objHTML = objHTML[0]
-                    } else {
-                        _tmpField.push(f);
-                        continue
-                    }
-                }
-                if (objMini) {
-                    objMini.validate();
-                    if (!objMini.isValid()) {
-                        objMini.focus();
-                        _C(f, bw, bm);
-                        return;
-                    }
-                } else {
-                    var type = objHTML.type ? objHTML.type.toLowerCase() : "div";
-                    if (type == "radio" || type == "checkbox") {
-                        var tmp = $('input[name=\"' + f + '\"][type=' + type + ']:checked', gForm);
-                        if (tmp.length < 1) {
-                            if (_C(f, bw, bm)) {
-                                objHTML.focus();
-                                return;
-                            }
-                        }
-                    } else {
-                        if ($.trim(objHTML.value) == "") {
-                            if ((!be) && _C(f, bw, bm)) {
-                                objHTML.focus();
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    if (_tmpField.length > 0) {
-        alert(WF_CONST_LANG.NO_CHECK_FIELD+"\n" + _tmpField.join("\n"))
-    }
-	*/
-    gArrTacheName = []; //清空
+	
+	gArrTacheName = []; //清空
     if (!gIsNewDoc) {
         /*
 		多人审批，及多人顺序审批
@@ -916,7 +798,9 @@ function wfSubDocStart() {
             }
         }
         //})
-    } else {
+    }
+	else
+	{
         /*
 		多条路由情况：
 		1、多条唯一线
@@ -1417,7 +1301,7 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
 		gForm.WFFlowLogXML.value = XML2String(gWFLogXML);
 	}
     ClearRepeat("AllUser", gUserCName);
-    fnResumeDisabled();
+    //fnResumeDisabled();
     gForm["$$QuerySaveAgent"].value = gWQSagent;
     //页面提交后执行
     var _pe = gPageEvent["SaveAfter"];
