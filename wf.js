@@ -99,7 +99,6 @@ function initOnLoad(arrTmpCurUser) {
             if (_pe.replace(/\s/, "") !== "") {
                 try {
 					//@V6.1 - 屏蔽eval功能(2015-09-16)
-                    //eval(_pe)
 					new Function(_pe)();
                 } catch(e) {
 					//@V6.1 * 调整为多语言 (2015-09-18)
@@ -144,9 +143,9 @@ function initOnLoad(arrTmpCurUser) {
                 var strFieldStatus = item.getAttribute("value");
                 if (strFieldStatus !== "") {
 					//@V6.1 # 将JSON字符串中的单引号换为双引号，否则在IE下parseJSON解析时会报错误。(2015-09-16)
-					strFieldStatus=strFieldStatus.replace(/\'/g,"\""); 
+					strFieldStatus=strFieldStatus.replace(/\'/g,"\"");
+					console.log(strFieldStatus);
                     gJsonField = $.parseJSON(strFieldStatus);
-
                     var _getStatus = function(obj) {
                         for (o in obj) {
                             return o
@@ -156,123 +155,95 @@ function initOnLoad(arrTmpCurUser) {
                         try {
                             var strTagName = obj.tagName.toLowerCase(),
                             strType = obj.type ? obj.type.toLowerCase() : "div";
-                            var isMini = ($(obj).attr("class") != undefined) && $(obj).attr("class").split("mini-").length > 1;
                             switch (status) {
-                            case "e":
-                                /*编辑*/
-                                if (f.indexOf("ID_") > -1) {
-                                    gIdeaID.push(f)
-                                    /*存储意见的ID*/
-                                }
-                                break;
-                            case "r":
-                                /*只读*/
-                                if (isMini) {
+								case "e":
+									/*编辑*/
+									if (f.indexOf("ID_") > -1) {
+										gIdeaID.push(f)
+										/*存储意见的ID*/
+									}
+									break;
+								case "r":
+									/*只读*/
 									if (strTagName=="textarea" && f.indexOf("ID_") > -1) {
 										$('[name=\"' + f + '\"]', gForm).remove()
 									}else{
-										$(obj).attr("enabled", false);
+										$(obj).attr("enabled", false)
 									}
-                                    break;
-                                }
-                                switch (strTagName) {
-									case "textarea":
-										if (f.indexOf("ID_") > -1) {
-											$('[name=\"' + f + '\"]', gForm).remove()
-										} else {
-											obj.setAttribute("disabled", true);
+									break;
+								case "h":
+									/*隐藏*/
+									if (f.indexOf("js-") > -1) {
+										$(obj).css("display", "none");
+									} else {
+										if (strTagName != "textarea") {
+											if (strType == "radio" || strType == "checkbox") {
+												if (obj.parentNode && obj.parentNode.tagName.toLowerCase() == "label") {
+													$(obj.parentNode).css("visibility", "hidden")
+												}
+											} else {
+												$(obj).css("visibility", "hidden");
+											}
+										} else if (strTagName == "textarea") {
+											if (f.indexOf("ID_") > -1) {
+												$('[name=\"' + f + '\"]', gForm).empty()
+											}
 										}
-										break;
-									case "input":
-										obj.setAttribute("disabled", true);
-										break;
-									case "select":
-										obj.setAttribute("disabled", true);
-									default:
-                                }
-                                break;
-                            case "h":
-                                /*隐藏*/
-                                if (f.indexOf("js-") > -1) {
-                                    $(obj).css("display", "none");
-                                } else {
-                                    if (strTagName != "textarea") {
-                                        if (strType == "radio" || strType == "checkbox") {
-                                            if (obj.parentNode && obj.parentNode.tagName.toLowerCase() == "label") {
-                                                $(obj.parentNode).css("visibility", "hidden")
-                                            }
-                                        } else {
-                                            $(obj).css("visibility", "hidden");
-                                        }
-                                    } else if (strTagName == "textarea") {
-                                        if (f.indexOf("ID_") > -1) {
-                                            $('[name=\"' + f + '\"]', gForm).empty()
-                                        }
-                                    }
-                                }
-                                break;
-                            case "s":
-                                /*仅部分可见*/
-                                if (gJsonField[f].s != "") {
-                                    if (_arrSeeUser == null) {
-                                        _arrSeeUser = wfFormula(gJsonField[f].s.split("|"), "")
-                                    }
-                                    if ($.inArray(gUserCName, _arrSeeUser) < 0) {
-                                        if (f.indexOf("js-") > -1) {
-                                            $(obj).css("display", "none");
-                                        } else {
-                                            $(obj).css("visibility", "hidden");
-                                        }
-                                    } else {
-                                        if (f.indexOf("js-") > -1) {
-                                            $(obj).css("display", "");
-                                        }
-                                    }
-                                }
-                                break;
-                            case "w":
-                                /*必填*/
-                                if (gJsonField[f].w != "") {
-                                    if (f.indexOf("ID_") > -1) {
-                                        gIdeaID.push(f)
-                                        /*存储意见的ID*/
-                                    }
-                                    if (isMini && (strTagName == "input" || strTagName == "textarea")) {
-                                        $(obj).attr("required", true);
-                                        break;
-                                    }
-                                }
-                                break;
-                            case "m":
-                                /*仅部分可见必填*/
-                                if (gJsonField[f].m != "") {
-                                    var tmp = gJsonField[f].m.split("$$");
-                                    if (_arrSeeUser == null) {
-                                        _arrSeeUser = wfFormula(tmp[0].split("|"), "")
-                                    }
+									}
+									break;
+								case "s":
+									/*仅部分可见*/
+									if (gJsonField[f].s != "") {
+										if (_arrSeeUser == null) {
+											_arrSeeUser = wfFormula(gJsonField[f].s.split("|"), "")
+										}
+										if ($.inArray(gUserCName, _arrSeeUser) < 0) {
+											if (f.indexOf("js-") > -1) {
+												$(obj).css("display", "none");
+											} else {
+												$(obj).css("visibility", "hidden");
+											}
+										} else {
+											if (f.indexOf("js-") > -1) {
+												$(obj).css("display", "");
+											}
+										}
+									}
+									break;
+								case "w":
+									/*必填*/
+									if (f.indexOf("ID_") > -1) {
+										gIdeaID.push(f)
+										/*存储意见的ID*/
+									}
+									$(obj).attr("required", "true");
+									break;
+								case "m":
+									/*仅部分可见必填*/
+									var tmp = gJsonField[f].m.split("$$");
+									if (_arrSeeUser == null) {
+										_arrSeeUser = wfFormula(tmp[0].split("|"), "")
+									}
 
-                                    if ($.inArray(gUserCName, _arrSeeUser) < 0) {
-                                        if (f.indexOf("js-") > -1) {
-                                            $(obj).css("display", "none");
-                                        } else {
-                                            $(obj).css("visibility", "hidden");
-                                        }
-                                    } else {
-                                        if (f.indexOf("js-") > -1) {
-                                            $(obj).css("display", "");
-                                        }
-                                        if (f.indexOf("ID_") > -1) {
-                                            gIdeaID.push(f)
-                                            /*存储意见的ID*/
-                                        }
-                                        if (isMini && (strTagName == "input" || strTagName == "textarea")) {
-                                            $(obj).attr("required", true);
-                                            break;
-                                        }
-                                    }
-                                }
-                                break;
-                            default:
+									if ($.inArray(gUserCName, _arrSeeUser) < 0) {
+										if (f.indexOf("js-") > -1) {
+											$(obj).css("display", "none");
+										} else {
+											$(obj).css("visibility", "hidden");
+										}
+									} else {
+										if (f.indexOf("js-") > -1) {
+											$(obj).css("display", "");
+										}
+										if (f.indexOf("ID_") > -1) {
+											gIdeaID.push(f)
+											/*存储意见的ID*/
+										}
+										$(obj).attr("required", "true");
+										break;
+									}
+									break;
+								default:
                             }
                         } catch(e) {
                             alert(e.description)
@@ -303,11 +274,6 @@ function initOnLoad(arrTmpCurUser) {
 						//@V6.1 * 调整为多语言 (2015-09-18)
                         alert(WF_CONST_LANG.NO_CHECK_FIELD+"\n" + _tmpField.join("\n"))
                     }
-                    /*是否隐藏填写意见区域*/
-                    /*王茂林注释
-					if(gIdeaID.length<1){
-					_HiddenWFIdea()
-					}	*/
                 }
             });
             //装载后执行函数
@@ -325,9 +291,6 @@ function initOnLoad(arrTmpCurUser) {
     }
 	else 
 	{
-        /*王茂林注释
-		_HiddenWFIdea();
-		 */
 		 //装载附件表格
 		//loadAttachGrid(true);
         var _TEST = function(ID) {
@@ -345,27 +308,26 @@ function initOnLoad(arrTmpCurUser) {
                     var _setStatus = function(obj, status, f) {
                         try {
                             switch (status) {
-                                //case "h":
-                                /*隐藏*/
-                                //dojo.style(obj,"display","none");
-                                //if(gJsonField[f])delete gJsonField[f];
-                                //break;
-                            case "s":
-                                /*仅部分可见*/
-                                if (gJsonField[f].s != "") {
-                                    if (_arrSeeUser == null) {
-                                        _arrSeeUser = wfFormula(gJsonField[f].s.split("|"), "")
-                                    }
+								//case "h":
+									/*隐藏*/
+									//dojo.style(obj,"display","none");
+									//if(gJsonField[f])delete gJsonField[f];
+									//break;
+								case "s":
+									/*仅部分可见*/
+									if (gJsonField[f].s != "") {
+										if (_arrSeeUser == null) {
+											_arrSeeUser = wfFormula(gJsonField[f].s.split("|"), "")
+										}
 
-                                    if ($.inArray(gUserCName, _arrSeeUser) < 0) {
-                                        $(obj).css("display", "none");
-                                    } else {
-                                        $(obj).css("display", "");
-                                    }
-                                }
-                                //if(gJsonField[f])delete gJsonField[f];
-                                break;
-                            default:
+										if ($.inArray(gUserCName, _arrSeeUser) < 0) {
+											$(obj).css("display", "none");
+										} else {
+											$(obj).css("display", "");
+										}
+									}
+									break;
+								default:
                             }
                         } catch(e) {}
                     };
@@ -407,7 +369,7 @@ function initOnLoad(arrTmpCurUser) {
 	
     if (gCloseBtn.length > 0) {
         gArrBtns = gArrBtns.concat(gCloseBtn)
-    };
+    }
 	var btndom = '<button class="btn btn-md" type="button"></button>';
     $("#btnCont").empty();
 	
@@ -427,6 +389,10 @@ function initOnLoad(arrTmpCurUser) {
             style: "margin:0px 7px 15px 7px"
         });
     });
+	//替换回miniui的固定样式声明
+	$("[class^='miniui-']").attr("class",function(){
+		return this.className.replace(/miniui-/g,"mini-")
+	});
     mini.parse();
     
     if (!gIsNewDoc) {
@@ -476,49 +442,7 @@ function initOnLoad(arrTmpCurUser) {
 					}
 				}
                 sTacheNum++;
-            });
-
-            if (gWFStatus < 2) {} else {
-                var _LoadField = function() {
-                    $.ajax({
-                        url: encodeURI("/" + gWorkFlowDB + "/pgReadField?OpenPage&N=" + gWFModule + "-" + gFormType),
-                        dataType: "text",
-                        cache: false,
-                        success: function(txt) {
-                            if (txt != "") {
-                                var arrField = new Function("return [" + txt + "]")();
-                                $.each(arrField,
-                                function(i, item) {
-                                    var id = item.split("|")[1],
-                                    type = "name";
-                                    if (id.indexOf("ID_") > -1) {
-                                        type = "id";
-                                        var arrF = $('[' + type + '=\"' + id + '\"]', gForm);
-                                        if (arrF.length == 0) {
-                                            type = "name";
-                                        }
-                                    }
-                                    var arrF = $('[' + type + '=\"' + id + '\"]', gForm);
-                                    if (arrF.length == 0) {
-                                        _tmpField.push(id)
-                                    } //检测不到域的标识
-                                    $.each(arrF,
-                                    function(i, obj) {
-                                        obj.setAttribute("disabled", true)
-                                    })
-                                });
-                                if (_tmpField.length > 0) {
-									//@V6.1 * 调整为多语言 (2015-09-18)
-									alert(WF_CONST_LANG.NO_CHECK_FIELD+"\n" + _tmpField.join("\n"))
-                                }
-                            }
-                        }
-                    })
-                };
-                if (gIsEditDoc) {
-                    _LoadField()
-                };
-            }
+            })
         }
     }
 	//页面装载后执行全局方法
