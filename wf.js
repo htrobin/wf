@@ -144,7 +144,6 @@ function initOnLoad(arrTmpCurUser) {
                 if (strFieldStatus !== "") {
 					//@V6.1 # 将JSON字符串中的单引号换为双引号，否则在IE下parseJSON解析时会报错误。(2015-09-16)
 					strFieldStatus=strFieldStatus.replace(/\'/g,"\"");
-					console.log(strFieldStatus);
                     gJsonField = $.parseJSON(strFieldStatus);
                     var _getStatus = function(obj) {
                         for (o in obj) {
@@ -177,13 +176,7 @@ function initOnLoad(arrTmpCurUser) {
 										$(obj).css("display", "none");
 									} else {
 										if (strTagName != "textarea") {
-											if (strType == "radio" || strType == "checkbox") {
-												if (obj.parentNode && obj.parentNode.tagName.toLowerCase() == "label") {
-													$(obj.parentNode).css("visibility", "hidden")
-												}
-											} else {
-												$(obj).css("visibility", "hidden");
-											}
+											$(obj).attr("visible", false)
 										} else if (strTagName == "textarea") {
 											if (f.indexOf("ID_") > -1) {
 												$('[name=\"' + f + '\"]', gForm).empty()
@@ -199,13 +192,13 @@ function initOnLoad(arrTmpCurUser) {
 										}
 										if ($.inArray(gUserCName, _arrSeeUser) < 0) {
 											if (f.indexOf("js-") > -1) {
-												$(obj).css("display", "none");
+												$(obj).css("display", "none")
 											} else {
-												$(obj).css("visibility", "hidden");
+												$(obj).attr("visible", false)
 											}
 										} else {
 											if (f.indexOf("js-") > -1) {
-												$(obj).css("display", "");
+												$(obj).css("display", "")
 											}
 										}
 									}
@@ -216,7 +209,7 @@ function initOnLoad(arrTmpCurUser) {
 										gIdeaID.push(f)
 										/*存储意见的ID*/
 									}
-									$(obj).attr("required", "true");
+									$(obj).attr("required", true);
 									break;
 								case "m":
 									/*仅部分可见必填*/
@@ -227,19 +220,19 @@ function initOnLoad(arrTmpCurUser) {
 
 									if ($.inArray(gUserCName, _arrSeeUser) < 0) {
 										if (f.indexOf("js-") > -1) {
-											$(obj).css("display", "none");
+											$(obj).css("display", "none")
 										} else {
-											$(obj).css("visibility", "hidden");
+											$(obj).attr("visible", false)
 										}
 									} else {
 										if (f.indexOf("js-") > -1) {
-											$(obj).css("display", "");
+											$(obj).css("display", "")
 										}
 										if (f.indexOf("ID_") > -1) {
 											gIdeaID.push(f)
 											/*存储意见的ID*/
 										}
-										$(obj).attr("required", "true");
+										$(obj).attr("required", true);
 										break;
 									}
 									break;
@@ -468,6 +461,7 @@ function wfSubDocStart() {
 	//用于页面验证
 	var tmpform = new mini.Form(gForm);
 	tmpform.validate();
+	console.log(tmpform.isValid())
 	if (tmpform.isValid() == false) return;
 	
 	var isLock=false;
