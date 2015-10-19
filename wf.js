@@ -19,8 +19,10 @@ $(function() {
         //@V6.1 * 调整为多语言 (2015-09-18)
         alert(WF_CONST_LANG.NO_USE_WORKFLOW+"\n\n"+WF_CONST_LANG.CONTACT_ADMIN);
     } else {
+		log("----页面装载开始----");
         var tmpCurUser = gForm.CurUser.value.replace(/\s/g, ""),
         arrTmpCurUser = tmpCurUser.indexOf(",") > -1 ? tmpCurUser.split(",") : tmpCurUser.split(";");
+		log("当前流程处理人员: ",tmpCurUser);
         //读取流程图
         var strView = "vwWFXML";
         if (gWFDebug) {
@@ -31,6 +33,7 @@ $(function() {
         if (!gIsNewDoc) {
             strPath += "&id="+gCurDocID;
 		}
+		log("流程路径: "+strPath);
         $.ajax({
             url: strPath,
             cache: false,
@@ -57,17 +60,18 @@ $(function() {
 function initOnLoad(arrTmpCurUser) {
     //页面装载前执行全局方法
 	if(typeof beforeLoad != "undefined"){
-		beforeLoad();
+		beforeLoad()
 	}
     //编辑状态下执行
     $.each($('textarea[name^="ID_"]', gForm),
     function(i, item) {
         $("<div></div>").insertBefore(item).attr("id", $(item).attr("name"));
         if (!gIsEditDoc) {
-            $(item).remove();
+            $(item).remove()
         }
     });
     if (gIsEditDoc) {
+		log("$进入可编辑模式$");
         var strCurID = gIsNewDoc ? (gWFProcessXML.getAttribute("OriginNode")) : gForm.WFCurNodeID.value;
         gCurNode = $(strCurID, gWFProcessXML);
         if (gIsNewDoc) {
@@ -105,7 +109,7 @@ function initOnLoad(arrTmpCurUser) {
                     alert(WF_CONST_LANG.OPEN_BEFORE + " < " + _pe + " > " + WF_CONST_LANG.PAGE_NO_INIT);
                 }
             }
-            //装载按钮
+			log("*装载按钮*");
             $.each($(gForm.WFCurNodeID.value + ">WFBtnAssign>tr", gWFProcessXML),
             function(i, item) {
                 var objBtn = {};
@@ -144,6 +148,7 @@ function initOnLoad(arrTmpCurUser) {
                 if (strFieldStatus !== "") {
 					//@V6.1 # 将JSON字符串中的单引号换为双引号，否则在IE下parseJSON解析时会报错误。(2015-09-16)
 					strFieldStatus=strFieldStatus.replace(/\'/g,"\"");
+					log("*字段控制*: ");
                     gJsonField = $.parseJSON(strFieldStatus);
                     var _getStatus = function(obj) {
                         for (o in obj) {
@@ -152,6 +157,7 @@ function initOnLoad(arrTmpCurUser) {
                     };
                     var _setStatus = function(obj, status, f) {
                         try {
+							log("　　",f," -> ",status);
                             var strTagName = obj.tagName.toLowerCase(),
                             strType = obj.type ? obj.type.toLowerCase() : "div";
                             switch (status) {
@@ -239,7 +245,7 @@ function initOnLoad(arrTmpCurUser) {
 								default:
                             }
                         } catch(e) {
-                            alert(e.description)
+                            log("字段设置状态错误")
                         }
                     };
                     var _tmpField = [];
@@ -249,9 +255,9 @@ function initOnLoad(arrTmpCurUser) {
                         type = "name",
                         _arrSeeUser = null;
                         if (f.indexOf("js-") > -1) {
-                            var arrF = $("." + f, gForm);
+                            var arrF = $("." + f, gForm)
                         } else {
-                            var arrF = $('[' + type + '=\"' + f + '\"]', gForm);
+                            var arrF = $('[' + type + '=\"' + f + '\"]', gForm)
                         }
                         if (arrF.length == 0) {
                             _tmpField.push(f)
@@ -259,7 +265,7 @@ function initOnLoad(arrTmpCurUser) {
                         /*检测不到域的标识*/
                         $.each(arrF,
                         function(i, item) {
-                            _setStatus(item, status, f);
+                            _setStatus(item, status, f)
                         })
                     }
 
@@ -284,6 +290,7 @@ function initOnLoad(arrTmpCurUser) {
     }
 	else 
 	{
+		log("$进入只读模式$");
 		 //装载附件表格
 		//loadAttachGrid(true);
         var _TEST = function(ID) {
@@ -372,6 +379,7 @@ function initOnLoad(arrTmpCurUser) {
 		if (re.test(v)) return true;
 		return false;
 	};
+	log("*开始生成按钮*");
     $.each($.grep(gArrBtns,function(item){return item.isHidden != "1"}),
     function(i, e) {
         var gBtn=$(e.align == "1" ? $(btndom).appendTo("#btnContL") : $(btndom).appendTo("#btnContR"))
@@ -381,19 +389,24 @@ function initOnLoad(arrTmpCurUser) {
             onClick: e.clickEvent,
             style: "margin:0px 7px 15px 7px"
         });
+		log("　　按钮"+i+": "+e.name+"|"+e.ico+"|"+e.clickEvent);
     });
+	log("*结束生成按钮*");
 	//替换回miniui的固定样式声明
 	$("[class^='miniui-']").attr("class",function(){
 		return this.className.replace(/miniui-/g,"mini-")
 	});
+	log("*转换为MINIUI元素,并渲染*");
     mini.parse();
     
     if (!gIsNewDoc) {
         //生成意见
         if (gWFLogXML.childNodes) {
+			log("*开始生成意见*");
             var sTacheNum = 1, DataPrefix = "", DataSuffix = "", strId = "", WFIdeaPrefix = "", WFIdeaSuffix = "";
             $.each(gWFLogXML.childNodes,
             function(i, item) {
+				log(XML2String(item));
 				if(typeof(unionIdea)=="undefined" || !unionIdea){
 					strId = item.getAttribute("id") ? $.trim(item.getAttribute("id")) : "";
 					if (strId.indexOf("ID_") > -1) {
@@ -435,20 +448,23 @@ function initOnLoad(arrTmpCurUser) {
 					}
 				}
                 sTacheNum++;
-            })
+            });
+			log("*结束生成意见*");
         }
     }
 	//页面装载后执行全局方法
 	if(typeof(afterLoad)!="undefined"){
 		afterLoad();
 	}
+	log("----页面装载完毕----");
+	log("");
 }
 //获取XML节点属性的值
 function getNodeValue(node, name) {
     var reValue = "";
     $.each($(name, node),
     function(i, item) {
-        reValue = item.getAttribute("value").replace(/@line@/g, "");
+        reValue = item.getAttribute("value").replace(/@line@/g, "")
     });
     return $.trim(reValue);
 }
@@ -458,25 +474,29 @@ function fnResumeDisabled() {
 	$("input[disabled],textarea[disabled],select[disabled]").prop("disabled",false);
 }
 function wfSubDocStart() {
-	//用于页面验证
-	var tmpform = new mini.Form(gForm);
-	tmpform.validate();
-	console.log(tmpform.isValid())
-	if (tmpform.isValid() == false) return;
-	
+	log("");
+	log("----页面提交开始----");
 	var isLock=false;
 	var lastPerson="";//最后一次保存人
 	try{
 		if(!gIsNewDoc){
+			log("*检测文档冲突*");
 			$.ajax({
 				url:'/'+gCommonDB+"/(agtGetSubTime)?OpenAgent&id="+gCurDocID+"&db="+gCurDBName,
 				cache: false,
-				dataType:'text',
-				async:false,
+				dataType: 'text',
+				async: false,
 				success:function(txt){
-					if($.trim(txt)!="" && (mini.formatDate(mini.parseDate($.trim(txt).split("^")[0]),"yyyy-MM-dd HH:mm:ss")!=mini.formatDate(mini.parseDate(gSubTime),"yyyy-MM-dd HH:mm:ss"))){
-						isLock=true;
-						lastPerson=$.trim(txt).split("^")[1];
+					var _tmp=$.trim(txt);
+					if(_tmp!=""){
+						var arrTxt=_tmp.split("^");
+						if(mini.formatDate(mini.parseDate(arrTxt[0]),"yyyy-MM-dd HH:mm:ss")!=mini.formatDate(mini.parseDate(gSubTime),"yyyy-MM-dd HH:mm:ss")){
+							isLock=true;
+							lastPerson=arrTxt[1];
+						}
+						
+						log("前端处理时间: ",mini.formatDate(mini.parseDate(gSubTime),"yyyy-MM-dd HH:mm:ss"));
+						log("后端处理时间: ",mini.parseDate(arrTxt[0]),"yyyy-MM-dd HH:mm:ss");
 					}
 				}
 			});
@@ -489,8 +509,20 @@ function wfSubDocStart() {
 		alert(WF_CONST_LANG.LOCK_SUBMIT_PREFIX+lastPerson+WF_CONST_LANG.LOCK_SUBMIT_SUFFIX);
 		return;
 	}
+	
+	//用于页面验证
+	var tmpform = new mini.Form(gForm);
+	tmpform.validate();
+	if (tmpform.isValid() == false){
+		log("*表单验证失败,终止提交*");
+		return;
+	}
+	
+	log("当前节点ID(WFCurNodeID): ",gForm.WFCurNodeID.value);
     var objCurNode = $(gForm.WFCurNodeID.value, gWFProcessXML);
     var isWFOrg = getNodeValue(objCurNode[0], "WFWithOrg");
+	
+	log("是否启用组织机构: ",isWFOrg);
     if (arguments.length == 1) {
         gWQSagent = arguments[0];
     }
@@ -518,6 +550,7 @@ function wfSubDocStart() {
             strSequenceApprove = getNodeValue(objCurNode[0], "WFSequenceApprove");
             strAppoveStyle = getNodeValue(objCurNode[0], "WFApproveStyle");
             tmpGetValue = getNodeValue(objCurNode[0], "WFApproveNum");
+			log("审批方式: ",strAppoveStyle," ","审批人数: ",tmpGetValue," ","顺序审批: ",strSequenceApprove);
             if (tmpGetValue != "") {
                 intApproveNum = parseInt(tmpGetValue, 10)
             }
@@ -526,6 +559,7 @@ function wfSubDocStart() {
                 strWF = gForm.WFFinishApproval.value.replace(/\s/g, ""),
                 bGo2Next = true;
                 if (strWF != "") {
+					log("已处理完人员: ",strWF);
                     arrFinishUser = strWF.split(";")
                 };
                 if ($.grep(arrFinishUser,
@@ -536,25 +570,32 @@ function wfSubDocStart() {
                 }
                 gForm.WFFinishApproval.value = arrFinishUser.join(";");
                 if (strSequenceApprove == WF_CONST_LANG.YES) { //是
+					log("*顺序审批*");
                     /*
 					如果是所人审批情况：最好能逐一添加人员进行处理，当第二个人以后审批时，通知方式可以读取与当前节点相关的路由
 					如果当前审批人是领导，有相关的督办人员，督办人员可督促，可协办处理。这种情况时，CurUser存放2个人，一个是领导人，一个是督办人。(待开发)
 					 */
                     if ($.trim(gForm.WFWaitApproval.value) == "") {
                         gForm.WFWaitApproval.value = "";
+						log("多人审批已经处理完毕");
                         bGo2Next = false;
                     } else {
                         var arrWaitUsers = gForm.WFWaitApproval.value.replace(/\s/g, "").split(";");
+						log("多人审批->原先所有等待处理人: ",gForm.WFWaitApproval.value);
                         gForm.CurUser.value = arrWaitUsers[0];
+						log("多人审批->待处理人: ",gForm.CurUser.value);
                         gForm.WFWaitApproval.value = arrWaitUsers.slice(1).join(";");
+						log("多人审批->将要待处理人: ",gForm.WFWaitApproval.value);
                     }
                 } else {
+					log("*随机审批*");
                     var strUser = gForm.CurUser.value.replace(/\s/g, "");
                     //"文档不能进行流转！\n\n当前审批人不应为空，请联系管理员！"
                     if (strUser == "") {
                         alert(WF_CONST_LANG.DOCUMENT_NOT_SUBMIT);
                         return
                     }
+					log("多人审批->原先所有待处理人: ",gForm.CurUser.value);
                     var arrCurUser = strUser.split(";");
                     var arrNewCurUser = $.grep(arrCurUser,
                     function(item) {
@@ -580,7 +621,9 @@ function wfSubDocStart() {
                             gForm.CurUser.value = arrNewCurUser.join(";");
                         }
                     }
+					log("多人审批->待处理人: ",gForm.CurUser.value);
                 }
+				log("是否多人审批已处理完毕: ",bGo2Next?"YES":"NO");
                 if (bGo2Next) {
                     var bWFAgreeMark = 0;
                     $('[source="' + gForm.WFCurNodeID.value + '"]', gWFProcessXML).each(function(i, item) {
@@ -609,12 +652,15 @@ function wfSubDocStart() {
 
     gForm.WFStatus.value = 1;
     var arrEdges = $('[source="' + gForm.WFCurNodeID.value + '"]', gWFProcessXML);
+	
     if (arrEdges.length == 1) {
+		log("路由分支: ",1," 条");
         //一个路由线时，连接类型只能是唯一或直连
         //直连时，不需要弹出框，直接提交给下一环节已经定义好的审批人。
         //唯一选择时，需要弹出框，提交给所选择的人。
         //注：下一环节点为结束节点时，是特殊情况，需加注意。
         var vRelationType = getNodeValue(arrEdges[0], "WFRelationType");
+		log("路由类型: ",vRelationType);
         if (vRelationType != "") {
             //WORKFLOW_END:流程结束
             var tarID = arrEdges[0].getAttribute("target"),strTacheName = WF_CONST_LANG.WORKFLOW_END;
@@ -626,51 +672,60 @@ function wfSubDocStart() {
                     gForm.WFStatus.value = gWFStatus;
                     return
                 }
+				/*结束节点*/
                 if (tarID.indexOf("E") > -1) {
+					log("直连 --> 流程结束");
                     gForm.WFStatus.value = 2;
                     wfSubDocEnd("", [], strTacheName);
                     return
                 }
-                /*结束节点*/
                 var nxtNode = $(tarID, gWFProcessXML);
                 if (nxtNode.length == 1) {
-                    if (nxtNode[0].getAttribute("nType") != "Judge") {
-                        strTacheName = getNodeValue(nxtNode[0], "WFNodeName");
-                        tmpValue = getNodeValue(nxtNode[0], "WFActivityOwner");
-                        strAppoveStyle = getNodeValue(nxtNode[0], "WFApproveStyle");
-                        var strFormula = getNodeValue(nxtNode[0], "WFFormula");
-                        if (tmpValue != "") {
-                            gArrLogUser = wfFormula(tmpValue.split("|"), strFormula);
-                            if (gArrLogUser.length == 1) {
-                                wfSubDocEnd(tarID, [gArrLogUser[0]], strTacheName)
-                            } else {
-								//MUTIL_PERSON:多人
-                                if (strAppoveStyle != WF_CONST_LANG.MUTIL_PERSON) {
-                                    alert(WF_CONST_LANG.ROUTER_RELATIION_SCENE);
-                                } else {
-                                    wfSubDocEnd(tarID, gArrLogUser, strTacheName);
-                                    return;
-                                }
-                            }
-                        } else {
-                            alert(WF_CONST_LANG.NO_FIND_NEXT_PERSON);
-                        }
-                    }
+					strTacheName = getNodeValue(nxtNode[0], "WFNodeName");
+					tmpValue = getNodeValue(nxtNode[0], "WFActivityOwner");
+					strAppoveStyle = getNodeValue(nxtNode[0], "WFApproveStyle");
+					var strFormula = getNodeValue(nxtNode[0], "WFFormula");
+					log("环节名称: ",strTacheName);
+					log("环节处理人: ",tmpValue);
+					log("环节审批类型: ",strAppoveStyle);
+					log("是否网页公式: ",strFormula);
+					if (tmpValue != "") {
+						gArrLogUser = wfFormula(tmpValue.split("|"), strFormula);
+						log("直连",gArrLogUser);
+						if (gArrLogUser.length == 1) {
+							wfSubDocEnd(tarID, gArrLogUser, strTacheName)
+						} else {
+							//MUTIL_PERSON:多人
+							if (strAppoveStyle != WF_CONST_LANG.MUTIL_PERSON) {
+								alert(WF_CONST_LANG.ROUTER_RELATIION_SCENE);
+							} else {
+								wfSubDocEnd(tarID, gArrLogUser, strTacheName);
+								return;
+							}
+						}
+					} else {
+						alert(WF_CONST_LANG.NO_FIND_NEXT_PERSON);
+					}
                 } else {
                     alert(WF_CONST_LANG.NEXT_NODE_NOT_EXITED);
-                    return;
+                    return
                 }
 			//ONLY_SELECT:唯一选择
             } else if (vRelationType == WF_CONST_LANG.ONLY_SELECT) {
+                /*结束节点*/
                 if (tarID.indexOf("E") > -1) {
+					log("唯一选择 --> 流程结束");
                     gForm.WFStatus.value = 2;
                     wfSubDocEnd("", [], strTacheName);
                     return
                 }
-                /*结束节点*/
+
                 strTacheName = getNodeValue(arrEdges[0], "WFNodeDetail");
                 strTacheNameSelect = getNodeValue(arrEdges[0], "WFTacheNameSelect");
                 gArrTacheName.push([strTacheName, tarID + "^" + arrEdges[0].nodeName, strTacheNameSelect]);
+				log("目标环节名称: ",strTacheName);
+				log("是否默认选中: ",strTacheNameSelect);
+				log("目标环节编号: ",arrEdges[0].nodeName);
                 var oWinDlg = mini.get('oWinDlg');
                 if (!oWinDlg) {
 					oWinDlg=new mini.Window();
@@ -700,7 +755,7 @@ function wfSubDocStart() {
                         dataType: 'text',
                         success: function(e) {
                             var selOrgDom = e;
-                            oWinDlg.setBody( baidu.template(selOrgDom,PublicField)  );
+                            oWinDlg.setBody( baidu.template(selOrgDom,PublicField) );
                             oWinDlg.setFooter("<div id='SubmitDocActionBar' style='text-align:left'></div>");
                             setTimeout(function(){wfAddToolbar("oWinDlg")},10);
                             loadOrgTree();
@@ -715,7 +770,6 @@ function wfSubDocStart() {
                 return;
             }
         }
-        //})
     }
 	else
 	{
@@ -725,20 +779,25 @@ function wfSubDocStart() {
 		2、多条唯一线与条件选择或条件直连组合，注意：（只要条件直连满足其它的都无需在进行判断，直接进行提交;常用于“拒绝”、“同意”）
 		3、
 		 */
+		log("路由分支: ",arrEdges.length," 条");
 		var bWinDlg=false;
 		$.each(arrEdges,function(index,edge){
             var vRelationType = getNodeValue(edge, "WFRelationType"),
             tmpValue = "",
             bReturn = true;
+			log("路由类型: ",vRelationType);
 			//CONDITION_DIRECT:条件直连
             if (vRelationType == WF_CONST_LANG.CONDITION_DIRECT) {
                 //条件直连；此环境下，无需弹出框，该功能常用于“拒绝”、“同意”等类似情况较多。
                 tmpValue = getNodeValue(edge, "WFCondition");
+				log("条件公式: ",tmpValue);
                 if (tmpValue != "") {
                     if (wfFormulaCompare(gForm, tmpValue)) {
+						log("满足条件");
                         ClearRepeat("WFRouterID", edge.nodeName); //增加路由线
                         var tarID = edge.getAttribute("target");
                         if (tarID.indexOf("E") > -1) {
+							log(vRelationType," --> 流程结束");
                             gForm.WFStatus.value = 2;
                             //"流程结束"
                             wfSubDocEnd("", [], WF_CONST_LANG.WORKFLOW_END);
@@ -746,8 +805,12 @@ function wfSubDocStart() {
                             var nxtNode = $(tarID, gWFProcessXML);
                             if (nxtNode.length == 1) {
                                 strTacheName = getNodeValue(nxtNode[0], "WFNodeName");
+								strAppoveStyle = getNodeValue(nxtNode[0], "WFApproveStyle");
                                 tmpValue = getNodeValue(nxtNode[0], "WFActivityOwner");
                                 var strFormula = getNodeValue(nxtNode[0], "WFFormula");
+								log("环节名称: ",strTacheName);
+								log("环节处理人: ",tmpValue);
+								log("是否网页公式: ",strFormula);
                                 if (tmpValue != "") {
                                     gArrLogUser = [];
                                     $.each($(tarID, gWFLogXML),
@@ -759,6 +822,7 @@ function wfSubDocStart() {
                                             }
                                         }
                                     });
+									log(tarID,"环节号已有下列人员参与过处理: ",gArrLogUser);
                                     //
                                     //	拒绝有两种可能:
                                     //		1、拒绝回去的环节点已经参与过审批
@@ -771,7 +835,8 @@ function wfSubDocStart() {
                                         gArrLogUser = $.map(wfFormula(tmpValue.split("|"), strFormula),
                                         function(item) {
                                             return item + "^P"
-                                        })
+                                        });
+										log("重新获取人员: ",gArrLogUser);
                                     }
                                     var arrLogUser = [];
                                     $.each(gArrLogUser,
@@ -784,6 +849,7 @@ function wfSubDocStart() {
                                     if (!(strAppoveStyle != WF_CONST_LANG.MUTIL_PERSON && gArrLogUser.length > 1)) {
                                         wfSubDocEnd(tarID, gArrLogUser, strTacheName);
                                     } else {
+										log("审批方式为: 单人,但有多位处理人,故需弹出选择其一. ",gArrLogUser);
                                         var oCheckUserDlg = new mini.Window();
 										oCheckUserDlg.set({
                                             id: "oCheckUserDlg",
@@ -855,6 +921,8 @@ function wfSubDocStart() {
                     bWinDlg=false;
 					bReturn = false;
                 }
+				log("是否允许弹框: ",bWinDlg?"YES":"NO");
+				log("是否阻止循环路由: ",bReturn?"NO":"YES");
 			//DIRECT:直连
             } else if (vRelationType == WF_CONST_LANG.DIRECT) {                
                 alert(WF_CONST_LANG.MUTIL_BRANCH_NOT_USE_DIRECT); //多条分支时，不允许使用“直连”。请您联系系统管理员！
@@ -863,30 +931,40 @@ function wfSubDocStart() {
             } else {
                 if (vRelationType == WF_CONST_LANG.ONLY_SELECT) { //唯一选择
                     tmpValue = getNodeValue(edge, "WFNodeDetail");
+					log("环节名称: ",tmpValue);
                     if (tmpValue != "") {
                         strTacheNameSelect = getNodeValue(edge, "WFTacheNameSelect");
+						log("是否默认选中: ",strTacheNameSelect);
+						log("目标环节编号: ",edge.nodeName);
                         gArrTacheName.push([tmpValue, edge.getAttribute("target") + "^" + edge.nodeName, strTacheNameSelect])
                     }
 					bWinDlg=true; //允许弹出窗口
                 } else {
                     tmpValue = getNodeValue(edge, "WFCondition");
+					log("条件公式: ",tmpValue);
                     if (tmpValue != "") {
                         //条件选择时，满足条件就加入环节选择
                         if (wfFormulaCompare(gForm, tmpValue)) {
+							log("*满足条件*");
                             tmpValue = getNodeValue(edge, "WFNodeDetail");
+							log("环节名称: ",tmpValue);
                             if (tmpValue != "") {
                                 strTacheNameSelect = getNodeValue(edge, "WFTacheNameSelect");
+								log("是否默认选中: ",strTacheNameSelect);
+								log("目标环节编号: ",edge.nodeName);
                                 gArrTacheName.push([tmpValue, edge.getAttribute("target") + "^" + edge.nodeName, strTacheNameSelect]);
                             }
 							bWinDlg=true; //允许弹出窗口
                         }
                     }
                 }
-				
+				log("是否允许弹框: ",bWinDlg?"YES":"NO");
+				log("是否阻止循环路由: ",bReturn?"NO":"YES");
             }
-            return bReturn;			
+            return bReturn;
 		});
 		if(bWinDlg){
+			log("*弹出处理人员选择框*");
             var oWinDlg = mini.get('oWinDlg');
             if (!oWinDlg) {
                 oWinDlg=new mini.Window();
@@ -972,9 +1050,12 @@ function wfSubDocEnd(tarID, Users, TacheName) {
             }
         }
     });
+	log("是否意见标识: ",bWFAgreeMark?"YES":"NO");
     gForm.WFPreNodeID.value = gForm.WFCurNodeID.value;
     gForm.WFCurNodeID.value = tarID;
     gForm.WFTacheName.value = TacheName;
+	log("目标环节ID: ",tarID);
+	log("目标环节名称: ",TacheName);
     if (gForm.WFFinishApproval.value == "") {
         gForm.WFPreUser.value = gForm.CurUser.value;
     } else {
@@ -991,18 +1072,23 @@ function wfSubDocEnd(tarID, Users, TacheName) {
             strSequenceApprove = "";
             strAppoveStyle = getNodeValue(objCurNode[0], "WFApproveStyle");
             strSequenceApprove = getNodeValue(objCurNode[0], "WFSequenceApprove");
+			log("审批方式: ",strAppoveStyle);
+			log("是否顺序审批: ",strSequenceApprove);
             if (strAppoveStyle == WF_CONST_LANG.MUTIL_PERSON) {
                 if (strSequenceApprove == WF_CONST_LANG.YES) {
                     gForm.CurUser.value = arrUsers[0];
                     gForm.WFWaitApproval.value = arrUsers.slice(1).join(";");
                     bWrite = false;
+					log("下一环节为多人顺序审批,审批人为: ",arrUsers[0]);
+					log("下一环节为多人顺序审批,待审批人为: ",gForm.WFWaitApproval.value);
                 }
             }
         }
     }
     if (bWrite) {
-        gForm.CurUser.value = arrUsers.join(";")
-    };
+        gForm.CurUser.value = arrUsers.join(";");
+		log("下一环节审批人为: ",gForm.CurUser.value);
+    }
     wfSubDocEndSave(true, bWFAgreeMark);
 }
 //去重
@@ -1188,7 +1274,8 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
     tmpNode.setAttribute("user", gUserCName);
     tmpNode.setAttribute("time", gServerTime);
     if (bGo2Next) {
-        if (gForm.WFTacheName.value == WF_CONST_LANG.WORKFLOW_END) {//流程结束
+		log("是否为多人审批过程: ",bGo2Next?"YES":"NO");
+        if (gForm.WFTacheName.value == WF_CONST_LANG.WORKFLOW_END) { //流程结束
             gAction = gUserCName + WF_CONST_LANG.USE_ACTION
         } else {
             gAction = gUserCName + WF_CONST_LANG.ACTION_TO + gForm.CurUser.value + WF_CONST_LANG.SYMBOL_END
@@ -1218,8 +1305,10 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
 	if(""!==XML2String(gWFLogXML)){
 		gForm.WFFlowLogXML.value = XML2String(gWFLogXML);
 	}
+	log("当前处理人: ",gUserCName);
     ClearRepeat("AllUser", gUserCName);
-    //fnResumeDisabled();
+    fnResumeDisabled();
+	log("提交代理名称: ",gWQSagent);
     gForm["$$QuerySaveAgent"].value = gWQSagent;
     //页面提交后执行
     var _pe = gPageEvent["SaveAfter"];
@@ -1241,14 +1330,16 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
                     if (getNodeValue(objCurNode[0], "WFRtxEnabled") == WF_CONST_LANG.YES) {
                         var link = "/" + gCurDB + "/vwComOpenDoc/" + gDocKey + ".?OpenDocument",
                         msg = wfMsgContent(getNodeValue(objCurNode[0], "WFRtxContent"));
-
+						log("RTX.link: ",link);
+						log("RTX.msg: ",msg);
                         var strMo = "";
-                        if (gForm.WFModule) {
+                        if (typeof gForm.WFModule!="undefined") {
                             strMo = gForm.WFModule.value
                         }
+						log("RTX.title: ",strMo);
                         var user = "",
                         args = "&L=" + link + "&M=" + msg + "&T=" + strMo;
-                        //alert(msg);
+
                         if (getNodeValue(objCurNode[0], "WFAllObject") == WF_CONST_LANG.YES) {
                             user = "all";
                         } else if (getNodeValue(objCurNode[0], "WFAllReadUsers") == WF_CONST_LANG.YES) {
@@ -1258,21 +1349,27 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
                         } else {
                             user = gForm.CurUser.value.split(";").join(",");
                         }
+						log("RTX.user: ",user);
                         args += "&U=" + user;
-                        $.ajax({
-                            url: encodeURI("/" + gCommonDB + "/(agtWFRTX)?OpenAgent" + args),
-                            cache: false,
-                            async: false,
-                            success: function(txt) {
-                                //strU=txt;
-                            }
-                        });
+						if(DiyJs.webDebug){
+							$.ajax({
+								url: encodeURI("/" + gCommonDB + "/(agtWFRTX)?OpenAgent" + args),
+								cache: false,
+								async: false,
+								success: function(txt) {
+									//strU=txt;
+								}
+							})
+						}
                     }
-                } catch(e) {}
+                } catch(e) {log("RTX发送异常")}
             }
         }
     }
-    gForm.submit()
+	log("----页面提交结束----");
+	if(DiyJs.webDebug){
+		gForm.submit()
+	}
 }
 //处理消息提醒内容
 function wfMsgContent(content) {
@@ -1486,7 +1583,6 @@ function loadOrgTree() {
         async: false,
         success: function(MenuText) {
             if (MenuText.indexOf(",") > -1) {
-                //tree.loadList(eval("[" + MenuText.substr(1) + "]"), "id", "pid");
                 tree.loadList(new Function("return [" + MenuText.substr(1) + "]")(), "id", "pid");
             }
         }
@@ -1501,4 +1597,23 @@ function treeNodeClick(e) {
 //加载已选元素
 function listNodeClick(e) {
     AddValue(e.sender.getSelected().name, "selectList");
+}
+//日志
+function log() {
+	if(typeof DiyJs == 'undefined'){
+		window.DiyJs={webDebug:0}
+	}
+    if (DiyJs.webDebug==0) {
+        return;
+    }
+    var msg = '[ht.workflow] ' + Array.prototype.join.call(arguments,'');
+    if (window.console) {
+		if(window.console.debug)
+			window.console.debug(msg);
+		else
+			window.console.log(msg);
+    }
+    else if (window.opera && window.opera.postError) {
+        window.opera.postError(msg);
+    }
 }
