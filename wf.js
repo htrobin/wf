@@ -520,7 +520,7 @@ function wfSubDocStart() {
 	
 	log("当前节点ID(WFCurNodeID): ",gForm.WFCurNodeID.value);
     var objCurNode = $(gForm.WFCurNodeID.value, gWFProcessXML);
-    var isWFOrg = getNodeValue(objCurNode[0], "WFWithOrg");
+    var isWFOrg = getNodeValue(objCurNode[0], "WFWithOrg")===""?0:1;
 	
 	log("是否启用组织机构: ",isWFOrg);
     if (arguments.length == 1) {
@@ -550,7 +550,7 @@ function wfSubDocStart() {
             strSequenceApprove = getNodeValue(objCurNode[0], "WFSequenceApprove");
             strAppoveStyle = getNodeValue(objCurNode[0], "WFApproveStyle");
             tmpGetValue = getNodeValue(objCurNode[0], "WFApproveNum");
-			log("审批方式: ",strAppoveStyle," ","审批人数: ",tmpGetValue," ","顺序审批: ",strSequenceApprove);
+			log("审批方式: ",strAppoveStyle," ","审批人数: ",tmpGetValue," ","是否顺序审批: ",strSequenceApprove);
             if (tmpGetValue != "") {
                 intApproveNum = parseInt(tmpGetValue, 10)
             }
@@ -750,7 +750,7 @@ function wfSubDocStart() {
                         html: WF_CONST_LANG.LIST_LOADING //列表加载中...
                     });
                     $.ajax({
-                        url: '/HTCommon/HT_Common.nsf/htmWFTechSel?OpenPage&s=select',
+                        url: '/HTCommon/HT_Common.nsf/htmWFTechSel?OpenPage&Org='+(isWFOrg?"":"1"),
                         async: true,
                         dataType: 'text',
                         success: function(e) {
@@ -758,7 +758,6 @@ function wfSubDocStart() {
                             oWinDlg.setBody( baidu.template(selOrgDom,PublicField) );
                             oWinDlg.setFooter("<div id='SubmitDocActionBar' style='text-align:left'></div>");
                             setTimeout(function(){wfAddToolbar("oWinDlg")},10);
-                            loadOrgTree();
                             mini.unmask(oWinDlg.getEl());
                         }
                     })
@@ -872,7 +871,7 @@ function wfSubDocStart() {
                                             html: WF_CONST_LANG.LIST_LOADING //列表加载中...
                                         });
                                         $.ajax({
-                                            url: '/HTCommon/HT_Common.nsf/htmWFTechSel?openpage&s=selected',
+                                            url: '/HTCommon/HT_Common.nsf/htmWFTechSel?OpenPage&Back=1',
                                             async: true,
                                             dataType: 'text',
                                             success: function(e) {
@@ -989,7 +988,7 @@ function wfSubDocStart() {
                     html: WF_CONST_LANG.LIST_LOADING //列表加载中...
                 });
                 $.ajax({
-                    url: '/HTCommon/HT_Common.nsf/htmWFTechSel?OpenPage&s=select',
+                    url: '/HTCommon/HT_Common.nsf/htmWFTechSel?OpenPage&Org='+(isWFOrg?"":"1"),
                     async: true,
                     dataType: 'text',
                     success: function(e) {
@@ -997,7 +996,6 @@ function wfSubDocStart() {
                         oWinDlg.setBody( baidu.template(selOrgDom,PublicField) );
                         oWinDlg.setFooter("<div id='SubmitDocActionBar' style='text-align:right'></div>");
                         setTimeout(function(){wfAddToolbar("oWinDlg")},10);
-                        loadOrgTree();
                         mini.unmask(oWinDlg.getEl());
                     }
                 });
@@ -1026,9 +1024,7 @@ function wfSubDocProcess(tarID, TacheName, TacheID, empid) {
             if (strAppoveStyle == "" && arrUser.length > 1) {
                 //ONLY_SELECT_ONE:仅允许选择一个人！
                 alert(WF_CONST_LANG.ONLY_SELECT_ONE);
-                $("#SubmitDocActionBar").css({
-                    display: ""
-                });
+				mini.unmask(document.body);
                 return
             }
         }	
@@ -1036,9 +1032,7 @@ function wfSubDocProcess(tarID, TacheName, TacheID, empid) {
         wfSubDocEnd(tarID, arrUser, TacheName);
     } else {
         alert(WF_CONST_LANG.SELECT_RElATED_PERSON);
-        $("#SubmitDocActionBar").css({
-            display: ""
-        });
+		mini.unmask(document.body);
     }
 }
 function wfSubDocEnd(tarID, Users, TacheName) {
@@ -1124,10 +1118,12 @@ function wfDlgBtnSave() {
     if (!confirm(WF_CONST_LANG.CONFIRM_SUBMIT)) {
         gForm.WFStatus.value = gWFStatus;
         return
-    };
-    $("#SubmitDocActionBar").css({
-        display: "none"
-    });
+    }
+	mini.mask({
+		el : document.body,
+		cls : 'mini-mask-loading',
+		html : '数据处理中...'
+	});
     var arrVal = mini.get("selTacheName").value.split("^");
     wfSubDocProcess(arrVal[1], arrVal[0], arrVal[2], "empTarget");
 }
@@ -1154,14 +1150,12 @@ function AddValue(name, id) {
     var listbox = mini.get(id),objSelTacheName=mini.get("selTacheName");
     var tarID = ((objSelTacheName!=undefined)&&(objSelTacheName.value!="")) ? objSelTacheName.value.split("^")[1] : "";
     if (tarID != "") {
-        var objCurNode = $(tarID, gWFProcessXML); //alert(objCurNode.length)
+        var objCurNode = $(tarID, gWFProcessXML);
         if (objCurNode.length == 1) {
             var strAppoveStyle = getNodeValue(objCurNode[0], "WFApproveStyle");
             if (strAppoveStyle == "" && listbox.data.length > 0) {
                 alert(WF_CONST_LANG.ONLY_SELECT_ONE); //仅允许选择一个人！
-                $("#SubmitDocActionBar").css({
-                    display: ""
-                });
+				mini.unmask(document.body);
                 return
             }
         }
@@ -1251,7 +1245,8 @@ function wfFormulaCompare(objFM, ConditionFormula) {
 				}else{
 					v="'"+v+"'";
 				}
-				ConditionFormula = ConditionFormula.replace(tmp, v)
+				ConditionFormula = ConditionFormula.replace(tmp, v);
+				log("公式: ",ConditionFormula);
 			});
 			return new Function("return " + ConditionFormula)();
 		}else{
@@ -1297,13 +1292,13 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
             $(cloneNode).appendTo(gWFLogXML);
             cloneNode = null;
             bCloneNode = false;
-        });
+        })
     }
     if (bCloneNode) {
-        $(tmpNode).appendTo(gWFLogXML);
+        $(tmpNode).appendTo(gWFLogXML)
     }
 	if(""!==XML2String(gWFLogXML)){
-		gForm.WFFlowLogXML.value = XML2String(gWFLogXML);
+		gForm.WFFlowLogXML.value = XML2String(gWFLogXML)
 	}
 	log("当前处理人: ",gUserCName);
     ClearRepeat("AllUser", gUserCName);
@@ -1314,9 +1309,9 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
     var _pe = gPageEvent["SaveAfter"];
     if (_pe.replace(/\s/, "") != "") {
         try {
-			new Function(_pe)();
+			new Function(_pe)()
         } catch(e) {
-			alert(WF_CONST_LANG.SAVE_AFTER + "< " + _pe + " > "+WF_CONST_LANG.PAGE_NO_INIT);
+			alert(WF_CONST_LANG.SAVE_AFTER + "< " + _pe + " > "+WF_CONST_LANG.PAGE_NO_INIT)
         }
     }
     /*通知方式*/
@@ -1351,7 +1346,7 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
                         }
 						log("RTX.user: ",user);
                         args += "&U=" + user;
-						if(DiyJs.webDebug){
+						if(!DiyJs.webDebug){
 							$.ajax({
 								url: encodeURI("/" + gCommonDB + "/(agtWFRTX)?OpenAgent" + args),
 								cache: false,
@@ -1367,7 +1362,22 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
         }
     }
 	log("----页面提交结束----");
+	setTimeout(function(){
+		var oWinDlg = mini.get('oWinDlg');
+        if (typeof oWinDlg!="undefined") {
+			oWinDlg.destroy()
+		}
+		oWinDlg = mini.get('oCheckUserDlg');
+        if (typeof oWinDlg!="undefined") {
+			oWinDlg.destroy()
+		}
+		mini.unmask(document.body);
+	},1000);
 	if(DiyJs.webDebug){
+		//这里还不够完善
+		gForm.WFCurNodeID.value=gForm.WFPreNodeID.value;
+		gForm.CurUser.value=gForm.WFPreUser.value;
+	}else{
 		gForm.submit()
 	}
 }
@@ -1557,6 +1567,10 @@ function changTab(e){
 		return;
 	}
 	if(e.tab.name=="OrgTree"){
+		var tree=mini.get("orgTree");
+		if(typeof mini.get("orgTree")!="undefined"&&tree.getData().length==0){
+			loadOrgTree()
+		}
 		mini.get("wfS").set({visible:true});
 		mini.get("wfRe").set({visible:true});
 		mini.get("searchValue").set({visible:true});
@@ -1576,14 +1590,20 @@ function XML2String(xmlDom){
 }
 //加载组织树
 function loadOrgTree() {
-    var tree = mini.get("orgTree");
+    var orgTree = mini.get("orgTree");
+	var oWinDlg = mini.get('oWinDlg');
+	mini.mask({
+		el: document.body,
+		cls: 'mini-mask-loading',
+		html: WF_CONST_LANG.LIST_LOADING //组织数据加载中...
+	});
     $.ajax({
         url: encodeURI("/" + gOrgDB + "/vwPersonTreeJson?OpenView&Count=9999&ExpandAll"),
         cache: false,
-        async: false,
         success: function(MenuText) {
             if (MenuText.indexOf(",") > -1) {
-                tree.loadList(new Function("return [" + MenuText.substr(1) + "]")(), "id", "pid");
+                orgTree.loadList(new Function("return [" + MenuText.substr(1) + "]")(), "id", "pid");
+				mini.unmask(document.body);
             }
         }
     });
@@ -1591,12 +1611,12 @@ function loadOrgTree() {
 //组织树元素选择
 function treeNodeClick(e) {
     if (e.node.isdept != "1") {
-        AddValue(e.node.name, "selectList");
+        AddValue(e.node.name, "selectList")
     }
 }
 //加载已选元素
 function listNodeClick(e) {
-    AddValue(e.sender.getSelected().name, "selectList");
+    AddValue(e.sender.getSelected().name, "selectList")
 }
 //日志
 function log() {
@@ -1609,11 +1629,11 @@ function log() {
     var msg = '[ht.workflow] ' + Array.prototype.join.call(arguments,'');
     if (window.console) {
 		if(window.console.debug)
-			window.console.debug(msg);
+			window.console.debug(msg)
 		else
-			window.console.log(msg);
+			window.console.log(msg)
     }
     else if (window.opera && window.opera.postError) {
-        window.opera.postError(msg);
+        window.opera.postError(msg)
     }
 }
