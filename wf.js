@@ -14,9 +14,9 @@ gPageEvent = {
     "SaveAfter": ""							//流程处理后保存表单前行为
 };
 //页面Dom解析后执行
-$(function() {
+$(function(){
     if (gIsNewDoc && gWFID == "") {
-        //@V6.1 * 调整为多语言 (2015-09-18)
+        /*V6.1 * 调整为多语言 (2015-09-18)*/
         alert(WF_CONST_LANG.NO_USE_WORKFLOW+"\n\n"+WF_CONST_LANG.CONTACT_ADMIN);
     } else {
 		log("----页面装载开始----");
@@ -102,10 +102,10 @@ function initOnLoad(arrTmpCurUser) {
             var _pe = gPageEvent["OpenBefore"];
             if (_pe.replace(/\s/, "") !== "") {
                 try {
-					//@V6.1 - 屏蔽eval功能(2015-09-16)
+					//V6.1 - 屏蔽eval功能(2015-09-16)
 					new Function(_pe)();
                 } catch(e) {
-					//@V6.1 * 调整为多语言 (2015-09-18)
+					//V6.1 * 调整为多语言 (2015-09-18)
                     alert(WF_CONST_LANG.OPEN_BEFORE + " < " + _pe + " > " + WF_CONST_LANG.PAGE_NO_INIT);
                 }
             }
@@ -140,13 +140,13 @@ function initOnLoad(arrTmpCurUser) {
                 gArrBtns.push(objBtn);
             });
 			//装载附件表格
-			//loadAttachGrid(false);
+			loadAttachGrid(false);
             //读取当前节点字段控制清单
             $.each($(gForm.WFCurNodeID.value + ">WFFieldStatus", gWFProcessXML),
             function(i, item) {
                 var strFieldStatus = item.getAttribute("value");
                 if (strFieldStatus !== "") {
-					//@V6.1 # 将JSON字符串中的单引号换为双引号，否则在IE下parseJSON解析时会报错误。(2015-09-16)
+					//V6.1 # 将JSON字符串中的单引号换为双引号，否则在IE下parseJSON解析时会报错误。(2015-09-16)
 					strFieldStatus=strFieldStatus.replace(/\'/g,"\"");
 					log("*字段控制*: ");
                     gJsonField = $.parseJSON(strFieldStatus);
@@ -270,7 +270,7 @@ function initOnLoad(arrTmpCurUser) {
                     }
 
                     if (_tmpField.length > 0) {
-						//@V6.1 * 调整为多语言 (2015-09-18)
+						//V6.1 * 调整为多语言 (2015-09-18)
                         alert(WF_CONST_LANG.NO_CHECK_FIELD+"\n" + _tmpField.join("\n"))
                     }
                 }
@@ -279,10 +279,10 @@ function initOnLoad(arrTmpCurUser) {
             var _pe = gPageEvent["OpenAfter"];
             if (_pe.replace(/\s/, "") != "") {
                 try {
-					//@V6.1 * 屏蔽eval功能(2015-09-16)
+					//V6.1 * 屏蔽eval功能(2015-09-16)
 					new Function(_pe)();
                 } catch(e) {
-					//@V6.1 * 调整为多语言 (2015-09-18)
+					//V6.1 * 调整为多语言 (2015-09-18)
                     alert(WF_CONST_LANG.OPEN_AFTER + " < " + _pe + " > " + WF_CONST_LANG.PAGE_NO_INIT);
                 }
             }
@@ -403,7 +403,7 @@ function initOnLoad(arrTmpCurUser) {
         //生成意见
         if (gWFLogXML.childNodes) {
 			log("*开始生成意见*");
-            var sTacheNum = 1, DataPrefix = "", DataSuffix = "", strId = "", WFIdeaPrefix = "", WFIdeaSuffix = "";
+            var sTacheNum = 1, strId = "", WFIdeaPrefix = "", WFIdeaSuffix = "";
             $.each(gWFLogXML.childNodes,
             function(i, item) {
 				log(XML2String(item));
@@ -411,39 +411,30 @@ function initOnLoad(arrTmpCurUser) {
 					strId = item.getAttribute("id") ? $.trim(item.getAttribute("id")) : "";
 					if (strId.indexOf("ID_") > -1) {
 						var _time = item.getAttribute("time"),
+						_tache=item.getAttribute("tache"),
 						_tdID = "td" + strId + sTacheNum,
 						_idea = DecodeHtml(item.getAttribute("idea")),
 						_mark = item.getAttribute("mark");
-						WFIdeaPrefix = '<table cellspacing=1 cellpadding=1 id="showWFIdea"><tr><td class="tdIdea" id="' + _tdID + '" ' + (_mark != 'undefined' && _mark == '1' ? 'style="color:red;font-weight:bold"': '') + '>&nbsp;</td></tr>';
-						WFIdeaSuffix = '<tr><td class="tdIdeaUser" title="'+WF_CONST_LANG.SPECIFIC_TIME + _time + '">' + item.getAttribute("user").replace(/[0-9]/g, "") + '&nbsp;&nbsp;<span>' + _time + '</span></td></tr></table>'; //具体时间：
-						$("#" + strId).append("<div>" + WFIdeaPrefix + WFIdeaSuffix + "</div>");
-						$("td#" + _tdID).empty().append(_idea);
+						WFIdeaPrefix = '<tr><td class="tdTecheName" style="width:150px;text-align:center">'+_tache+'</td><td class="tdIdea" ' + (_mark != 'undefined' && _mark == '1' ? 'style="color:red;"': '') + '><div id="' + _tdID + '">&nbsp;</div></td>';
+						WFIdeaSuffix = '<td class="tdIdeaUser">' + item.getAttribute("user").replace(/[0-9]/g, "") + '</td><td class="tdIdeaTime">' + _time + '</td></tr>';
+						$("#showWFIdea").append(WFIdeaPrefix+WFIdeaSuffix);
+						$("#" + _tdID).empty().html(_idea);
 					}
 				}else{
 					if(typeof(document.getElementById("ideaArea"))=="undefined"){
 						alert(WF_CONST_LANG.IDEA_AREA_UNDEFINDED); //意见显示区域未定义
 					}else{
 						strId = "ID_ideaArea";
-						/*var _time = item.getAttribute("time"),
-						_tache=item.getAttribute("tache"),
-						_tdID = "td" + strId + sTacheNum,
-						_idea = DecodeHtml(item.getAttribute("idea")),
-						_mark = item.getAttribute("mark");
-						WFIdeaPrefix = '<table cellspacing=1 cellpadding=1 id="showWFIdea"><tr><td class="techename">'+_tache+'</td></tr><tr><td class="tdIdea" id="' + _tdID + '" ' + (_mark != 'undefined' && _mark == '1' ? 'style="color:red;font-weight:bold"': '') + '>&nbsp;</td></tr>';
-						//WFIdeaSuffix='<tr><td class="tdIdeaUser" title="具体时间：'+_time+'">'+item.getAttribute("user")+'&nbsp;&nbsp;<span>'+_time.split(" ")[0]+'</span></td></tr></table>';
-						WFIdeaSuffix = '<tr><td class="tdIdeaUser" title="\u5177\u4F53\u65F6\u95F4\uFF1A' + _time + '">' + item.getAttribute("user").replace(/[0-9]/g, "") + '&nbsp;&nbsp;<span>' + _time + '</span></td></tr></table>';
-						$("#" + strId).append("<div>" + WFIdeaPrefix + WFIdeaSuffix + "</div>");
-						$("td#" + _tdID).empty().append(_idea);*/
 						if(item.getAttribute("idea")!=undefined){
 							var _time = item.getAttribute("time"),
 								_tache=item.getAttribute("tache"),
 								_tdID = "td" + strId + sTacheNum,
 								_idea = DecodeHtml(item.getAttribute("idea"))==""?"\u9605\u3002":DecodeHtml(item.getAttribute("idea")), //如果意见为空则显示"阅。"
 								_mark = item.getAttribute("mark");
-							WFIdeaPrefix = '<table cellspacing=1 cellpadding=1 id="showWFIdea" style="width:100%"><tr><td class="techename" style="width:150px;text-align:center">'+_tache+'</td><td class="tdIdea" id="' + _tdID + '" ' + (_mark != 'undefined' && _mark == '1' ? 'style="color:red;font-weight:bold;"': '') + '>&nbsp;</td>';
-							WFIdeaSuffix = '<td class="tdIdeaUser" style="width:250px;text-align:left" title="'+WF_CONST_LANG.SPECIFIC_TIME + _time + '"><span style="width:100px;float:left;text-align:center">' + item.getAttribute("user").replace(/[0-9]/g, "") + '</span><span style="float:left">' + _time + '</span></td></tr></table>';
-							$("#" + strId).append("<div onmousemove='this.style.backgroundColor=\"#e1dfdf\"' onmouseout='this.style.backgroundColor=\"#fff\"'>" + WFIdeaPrefix + WFIdeaSuffix + "</div>");
-							$("td#" + _tdID).empty().append(_idea);
+							WFIdeaPrefix = '<tr><td class="tdTecheName" style="width:150px;text-align:center">'+_tache+'</td><td class="tdIdea" ' + (_mark != 'undefined' && _mark == '1' ? 'style="color:red;"': '') + '><div id="' + _tdID + '">&nbsp;</div></td>';
+							WFIdeaSuffix = '<td class="tdIdeaUser">' + item.getAttribute("user").replace(/[0-9]/g, "") + '</td><td class="tdIdeaTime">' + _time + '</td></tr>';
+							$("#showWFIdea").append(WFIdeaPrefix+WFIdeaSuffix);
+							$("#" + _tdID).empty().html(_idea);
 						}
 					}
 				}
@@ -530,7 +521,7 @@ function wfSubDocStart() {
     var _pe = gPageEvent["SaveBefore"];
     if (_pe.replace(/\s/, "") != "") {
         try {
-			//@V6.1 *屏蔽eval功能(2015-09-16)
+			//V6.1 *屏蔽eval功能(2015-09-16)
 			new Function(_pe)();
         } catch(e) {
             alert(WF_CONST_LANG.SAVE_BEFORE + "< " + _pe + " > "+WF_CONST_LANG.PAGE_NO_INIT);
@@ -1198,7 +1189,7 @@ function DecodeHtml(s) {
 }
 /*
 公式比较
-@V6.1 -去除旧的公式比较，仅留JavaScript比较法
+V6.1 -去除旧的公式比较，仅留JavaScript比较法
 */
 function wfFormulaCompare(objFM, ConditionFormula) {
 	ConditionFormula=ConditionFormula.replace(/\s/g,"");
@@ -1279,6 +1270,7 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
     tmpNode.setAttribute("action", gAction);
     /*处理完毕*/
     tmpNode.setAttribute("mark", bWFAgreeMark);
+	log("所有意见ID标识:"+gIdeaID);
     if (gIdeaID.length > 0) {
         $.each(gIdeaID,
         function(i, id) {
@@ -1346,7 +1338,7 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
                         }
 						log("RTX.user: ",user);
                         args += "&U=" + user;
-						if(!DiyJs.webDebug){
+						if(!gWebDebug){
 							$.ajax({
 								url: encodeURI("/" + gCommonDB + "/(agtWFRTX)?OpenAgent" + args),
 								cache: false,
@@ -1373,7 +1365,7 @@ function wfSubDocEndSave(bGo2Next, bWFAgreeMark) {
 		}
 		mini.unmask(document.body);
 	},1000);
-	if(DiyJs.webDebug){
+	if(gWebDebug){
 		//这里还不够完善
 		gForm.WFCurNodeID.value=gForm.WFPreNodeID.value;
 		gForm.CurUser.value=gForm.WFPreUser.value;
@@ -1484,7 +1476,7 @@ function wfStop() {
                     if (intM == 0) {
                         alert(WF_CONST_LANG.STOP_ERROR_0)  //alert("可能系统有异常，未成功终止，请联系管理员！")
                     } else if (intM == 1) {
-                        alert(WF_CONST_LANG.STOP_ERROR_1)  //alert("已成功终止！");
+                        alert(WF_CONST_LANG.STOP_ERROR_1);  //alert("已成功终止！");
                         window.location.reload()
                     } else if (intM == 2) {
                         alert(WF_CONST_LANG.STOP_ERROR_2)  //alert("文档此时正在被他人处理，不能被终止！")
@@ -1620,18 +1612,19 @@ function listNodeClick(e) {
 }
 //日志
 function log() {
-	if(typeof DiyJs == 'undefined'){
-		window.DiyJs={webDebug:0}
+	if(typeof gWebDebug == 'undefined'){
+		gWebDebug=0;
 	}
-    if (DiyJs.webDebug==0) {
+    if (gWebDebug==0) {
         return;
     }
     var msg = '[ht.workflow] ' + Array.prototype.join.call(arguments,'');
     if (window.console) {
-		if(window.console.debug)
+		if(window.console.debug){
 			window.console.debug(msg)
-		else
+		}else{
 			window.console.log(msg)
+		}
     }
     else if (window.opera && window.opera.postError) {
         window.opera.postError(msg)
