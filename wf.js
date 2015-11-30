@@ -286,6 +286,33 @@ function initOnLoad(arrTmpCurUser) {
                     alert(WF_CONST_LANG.OPEN_AFTER + " < " + _pe + " > " + WF_CONST_LANG.PAGE_NO_INIT);
                 }
             }
+			if (gWFStatus == 1) {
+				//定时检测本文档是否已被修改
+				try{
+					$("body").everyTime("5s","docLock",function(){
+						$.ajax({
+							url:"/"+gCommonDB+"/(agtGetSubTimeO)?OpenAgent&id="+gCurDocID+"&db="+gCurDBName,
+							cache: false,
+							dataType:"text",
+							async:false,
+							success:function(txt){
+								var strText=$.trim(txt);
+								if(strText!=""){
+									if(mini.formatDate(mini.parseDate(strText.split("^")[0]),"yyyy-MM-dd HH:mm:ss")>mini.formatDate(mini.parseDate(gServerTime),"yyyy-MM-dd HH:mm:ss")){
+										$.gritter.add({
+												title:WF_CONST_LANG.CONFLICT_MSG_TITLE,
+												text: "["+strText.split("^")[1]+"]"+WF_CONST_LANG.CONFLICT_MSG_CONTENT,
+												class_name:"coding123",
+												time: 1000000
+										});
+										$("body").stopTime("docLock");
+									}
+								}
+							}
+						})
+					})
+				}catch(e){}
+			}
         }
     }
 	else 
